@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "99Freelas Auto-Proposta",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Gera propostas personalizadas com IA local (Ollama)",
   "permissions": [
     "activeTab",
@@ -27,6 +27,7 @@
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   }
 }
