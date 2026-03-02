@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>99Freelas Auto-Proposta</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      width: 380px;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      padding: 16px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .header h1 { font-size: 18px; color: #00d9ff; }
+    .header p { font-size: 11px; color: #888; margin-top: 4px; }
+    
+    .status {
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    
+    .status-ok { color: #4ade80; }
+    .status-error { color: #f87171; }
+    .status-warning { color: #fbbf24; }
+    
+    .config {
+      background: #222;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .config-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .config-row:last-child { margin-bottom: 0; }
+    
+    .config label { font-size: 12px; color: #aaa; }
+    
+    .config select, .config input {
+      width: 120px;
+      padding: 6px 8px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: 12px;
+    }
+    
+    .config input[type="number"] { width: 60px; text-align: center; }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+    
+    .btn-auto {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+    }
+    
+    .btn-auto:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-stop {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+      color: #000;
+    }
+    
+    .btn-secondary { background: #333; color: #fff; }
+    .btn-secondary:hover { background: #444; }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .stats {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      text-align: center;
+    }
+    
+    .stat-item { padding: 8px; background: #1e293b; border-radius: 6px; }
+    .stat-value { font-size: 20px; font-weight: bold; color: #00d9ff; }
+    .stat-label { font-size: 10px; color: #64748b; margin-top: 2px; }
+    
+    .log-area {
+      background: #0a0a0f;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 10px;
+      height: 150px;
+      overflow-y: auto;
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+      margin-bottom: 12px;
+    }
+    
+    .log-entry { margin-bottom: 4px; line-height: 1.4; }
+    .log-info { color: #7dd3fc; }
+    .log-success { color: #4ade80; }
+    .log-error { color: #f87171; }
+    .log-warning { color: #fbbf24; }
+    
+    .progress {
+      background: #333;
+      border-radius: 4px;
+      height: 6px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #00d9ff, #10b981);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    
+    .footer {
+      text-align: center;
+      font-size: 10px;
+      color: #555;
+      padding-top: 12px;
+      border-top: 1px solid #333;
+    }
+    
+    .historico {
+      background: #1e293b;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    
+    .historico-btns {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 11px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #334155;
+      color: #fff;
+    }
+    
+    .btn-small:hover { background: #475569; }
+    .btn-danger { background: #7f1d1d; }
+    .btn-danger:hover { background: #991b1b; }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🤖 99Freelas Auto-Proposta</h1>
+    <p>Automação de propostas com IA local</p>
+  </div>
+  
+  <div class="status">
+    <div class="status-item">
+      <span>Ollama:</span>
+      <span id="ollama-status" class="status-warning">Verificando...</span>
+    </div>
+    <div class="status-item">
+      <span>Status:</span>
+      <span id="bot-status" class="status-warning">Parado</span>
+    </div>
+  </div>
+  
+  <div class="config">
+    <div class="config-row">
+      <label>Modelo IA:</label>
+      <select id="modelo">
+        <option value="gemma3:4b">gemma3:4b (rápido)</option>
+        <option value="llama3">llama3</option>
+      </select>
+    </div>
+    <div class="config-row">
+      <label>Valor padrão (R$):</label>
+      <input type="number" id="valor-proposta" value="100" min="50" max="5000">
+    </div>
+    <div class="config-row">
+      <label>Prazo padrão (dias):</label>
+      <input type="number" id="prazo-proposta" value="7" min="1" max="90">
+    </div>
+    <div class="config-row">
+      <label>Limite de propostas:</label>
+      <input type="number" id="limite" value="5" min="1" max="20">
+    </div>
+    <div class="config-row">
+      <label>Delay entre propostas (seg):</label>
+      <input type="number" id="delay" value="30" min="10" max="120">
+    </div>
+  </div>
+  
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-value" id="stat-enviadas">0</div>
+      <div class="stat-label">Enviadas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-label">Projetos</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="stat-erros">0</div>
+      <div class="stat-label">Erros</div>
+    </div>
+  </div>
+  
+  <div class="progress">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  
+  <button id="btn-iniciar" class="btn btn-auto">
+    ▶️ Iniciar Automação
+  </button>
+  
+  <button id="btn-parar" class="btn btn-stop hidden">
+    ⏹️ Parar Automação
+  </button>
+  
+  <div class="log-area" id="log-area">
+    <div class="log-entry log-info">Pronto para iniciar...</div>
+  </div>
+  
+  <button id="btn-lista" class="btn btn-secondary">
+    📋 Ir para Novos Projetos
+  </button>
+  
+  <div class="historico">
+    <span>Histórico: <strong id="total-historico">0</strong> propostas</span>
+    <div class="historico-btns">
+      <button id="btn-relatorio" class="btn-small">💾 Salvar Relatório</button>
+      <button id="btn-limpar" class="btn-small btn-danger">🗑️ Limpar</button>
+    </div>
+  </div>
+  
+  <div class="footer">
+    Powered by Ollama | Novos Projetos
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

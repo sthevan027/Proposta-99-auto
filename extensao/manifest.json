@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "99Freelas Auto-Proposta",
+  "version": "1.0",
+  "description": "Gera propostas personalizadas com IA local (Ollama)",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://www.99freelas.com.br/*",
+    "https://99freelas.com.br/*",
+    "http://localhost:11434/*",
+    "http://127.0.0.1:11434/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "99Freelas Auto-Proposta"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.99freelas.com.br/*", "https://99freelas.com.br/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
