@@ -15,7 +15,7 @@ const logArea = document.getElementById('log-area');
 const progressBar = document.getElementById('progress-bar');
 const statEnviadas = document.getElementById('stat-enviadas');
 const statTotal = document.getElementById('stat-total');
-const statErros = document.getElementById('stat-erros');
+const statPulados = document.getElementById('stat-pulados');
 const totalHistorico = document.getElementById('total-historico');
 const btnRelatorio = document.getElementById('btn-relatorio');
 const btnLimpar = document.getElementById('btn-limpar');
@@ -53,7 +53,7 @@ function atualizarUI(estado) {
   // Stats
   statEnviadas.textContent = estado.stats.enviadas;
   statTotal.textContent = estado.stats.total;
-  statErros.textContent = estado.stats.erros;
+  statPulados.textContent = estado.stats.pulados ?? 0;
   
   // Histórico
   totalHistorico.textContent = estado.totalPropostas || 0;
@@ -129,7 +129,7 @@ btnParar.addEventListener('click', async () => {
 btnLista.addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   await chrome.tabs.update(tab.id, { 
-    url: 'https://www.99freelas.com.br/project-notifications/view?limit=20' 
+    url: 'https://www.99freelas.com.br/project-notifications/view?limit=50' 
   });
 });
 

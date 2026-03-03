@@ -5,14 +5,14 @@
 
 export const CONFIG = {
   OLLAMA_URL: 'http://localhost:11434',
-  URL_PROJETOS: 'https://www.99freelas.com.br/project-notifications/view?limit=20',
+  URL_PROJETOS: 'https://www.99freelas.com.br/project-notifications/view?limit=50',
   
   DEFAULTS: {
     modelo: 'gemma3:4b',
     valor: 100,
     prazo: 7,
     limite: 5,
-    delay: 30
+    delay: 20
   },
   
   TIMEOUTS: {
@@ -37,8 +37,8 @@ export const FILTERS = {
   ],
   
   SENT_KEYWORDS: [
-    'proposta enviada', 'você já enviou', 'sua proposta',
-    'aguardando resposta', 'proposta em análise'
+    'proposta enviada', 'você já enviou', 'sua proposta foi',
+    'aguardando resposta do cliente', 'proposta em análise'
   ],
   
   OPEN_INDICATORS: ['tempo restante', 'dias', 'horas']

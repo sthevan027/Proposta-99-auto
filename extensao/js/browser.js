@@ -41,6 +41,17 @@ class BrowserService {
   waitMs(ms) {
     return new Promise(r => setTimeout(r, ms));
   }
+
+  async scrollPageToLoadContent(tabId) {
+    await this.executeScript(tabId, () => {
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+    await this.wait(2);
+    await this.executeScript(tabId, () => {
+      window.scrollTo(0, 0);
+    });
+    await this.wait(1);
+  }
 }
 
 export const browser = new BrowserService();

@@ -36,47 +36,81 @@ class AutomationService {
   
   async run() {
     const { modelo, valor, prazo, limite, delay } = state.config;
+    const MAX_RETRIES = 3;
+    let retryCount = 0;
     
     // Pega tab ativa
     const tab = await browser.getActiveTab();
     state.setTabId(tab.id);
     
-    // Navega para lista de projetos
-    logger.info('Navegando para: Novos Projetos');
-    logger.info(CONFIG.URL_PROJETOS);
-    await browser.navigateTo(state.tabId, CONFIG.URL_PROJETOS);
-    await browser.wait(4);
-    
-    // Busca projetos
-    const projetos = await scraper.fetchProjects(state.tabId);
-    state.setTotal(projetos.length);
-    
-    if (projetos.length === 0) {
-      logger.error('Nenhum projeto encontrado!');
-      return;
-    }
-    
-    logger.success(`Encontrados ${projetos.length} projetos`);
-    
-    // Processa cada projeto
-    for (let i = 0; i < projetos.length && state.canContinue(); i++) {
-      const projeto = projetos[i];
+    while (state.canContinue() && retryCount < MAX_RETRIES) {
+      const enviadasAntes = state.stats.enviadas;
       
-      try {
-        await this.processProject(projeto, i, projetos.length);
-        
-        // Delay e volta para lista
-        if (state.canContinue() && i < projetos.length - 1) {
-          await this.waitAndReturn(delay);
+      // Navega para lista de projetos (ou recarrega em retry)
+      if (retryCount > 0) {
+        logger.info(`Tentativa ${retryCount + 1}/${MAX_RETRIES} - Recarregando página...`);
+        await browser.wait(5);
+      }
+      
+      logger.info('Navegando para: Novos Projetos');
+      logger.info(CONFIG.URL_PROJETOS);
+      await browser.navigateTo(state.tabId, CONFIG.URL_PROJETOS);
+      await browser.wait(4);
+
+      // Scroll para carregar projetos (lazy load)
+      await browser.scrollPageToLoadContent(state.tabId);
+      
+      // Busca projetos
+      const projetos = await scraper.fetchProjects(state.tabId);
+      state.setTotal(projetos.length);
+      
+      if (projetos.length === 0) {
+        logger.warning('Nenhum projeto encontrado nesta página.');
+        retryCount++;
+        if (retryCount < MAX_RETRIES) {
+          logger.info('Nova tentativa em 8s...');
+          await browser.wait(8);
         }
+        continue;
+      }
+      
+      logger.success(`Encontrados ${projetos.length} projetos`);
+      
+      // Processa cada projeto
+      for (let i = 0; i < projetos.length && state.canContinue(); i++) {
+        const projeto = projetos[i];
         
-      } catch (err) {
-        logger.error(`Erro: ${err.message}`);
-        state.incrementErrors();
+        try {
+          await this.processProject(projeto, i, projetos.length);
+          
+          // Delay e volta para lista
+          if (state.canContinue() && i < projetos.length - 1) {
+            await this.waitAndReturn(delay);
+          }
+          
+        } catch (err) {
+          logger.error(`Erro: ${err.message}`);
+          state.incrementErrors();
+        }
+      }
+      
+      const enviouAlguma = state.stats.enviadas > enviadasAntes;
+      
+      if (enviouAlguma || !state.canContinue()) {
+        break;
+      }
+      
+      if (state.stats.pulados > 0 || projetos.length > 0) {
+        retryCount++;
+        logger.info(`Todos os projetos foram pulados. Nova tentativa em 10s...`);
+        await browser.wait(10);
+      } else {
+        break;
       }
     }
     
-    logger.success(`Finalizado! ${state.stats.enviadas} propostas enviadas.`);
+    const { enviadas, pulados, erros } = state.stats;
+    logger.success(`Finalizado! ${enviadas} enviadas${pulados > 0 ? `, ${pulados} pulados` : ''}${erros > 0 ? `, ${erros} erros` : ''}.`);
   }
   
   async processProject(projeto, index, total) {
@@ -92,7 +126,7 @@ class AutomationService {
     const status = await scraper.checkProjectOpen(state.tabId);
     if (!status.aberto) {
       logger.warning(`PULANDO: ${status.motivo || 'não disponível'}`);
-      state.incrementErrors();
+      state.incrementPulados();
       return;
     }
     

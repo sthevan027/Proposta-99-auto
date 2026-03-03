@@ -10,7 +10,7 @@ class StateManager {
   constructor() {
     this.rodando = false;
     this.config = { ...CONFIG.DEFAULTS };
-    this.stats = { enviadas: 0, total: 0, erros: 0 };
+    this.stats = { enviadas: 0, total: 0, erros: 0, pulados: 0 };
     this.logs = [];
     this.tabId = null;
     this.propostas = [];
@@ -18,13 +18,13 @@ class StateManager {
   
   reset() {
     this.rodando = false;
-    this.stats = { enviadas: 0, total: 0, erros: 0 };
+    this.stats = { enviadas: 0, total: 0, erros: 0, pulados: 0 };
     this.logs = [];
     this.tabId = null;
   }
   
   resetStats() {
-    this.stats = { enviadas: 0, total: 0, erros: 0 };
+    this.stats = { enviadas: 0, total: 0, erros: 0, pulados: 0 };
     this.logs = [];
   }
   
@@ -42,6 +42,10 @@ class StateManager {
   
   incrementErrors() {
     this.stats.erros++;
+  }
+  
+  incrementPulados() {
+    this.stats.pulados++;
   }
   
   setTotal(total) {

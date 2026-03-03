@@ -8,25 +8,28 @@ import { browser } from './browser.js';
 class FormService {
   async clickSendProposal(tabId) {
     return await browser.executeScript(tabId, () => {
-      const elementos = document.querySelectorAll('a, button');
-      
-      for (const el of elementos) {
-        const texto = (el.innerText || '').trim();
-        
-        if (texto.toLowerCase() === 'enviar proposta') {
+      const isVisible = (el) => el && el.offsetParent !== null;
+
+      const getText = (el) => (el.innerText || el.textContent || el.getAttribute('aria-label') || '').trim().toLowerCase();
+
+      const candidates = document.querySelectorAll('a, button, [role="button"]');
+      for (const el of candidates) {
+        if (!isVisible(el)) continue;
+        const texto = getText(el);
+        if (texto === 'enviar proposta' || (texto.includes('enviar') && texto.includes('proposta') && !texto.includes('melhorar'))) {
           console.log('99F: Clicando em:', texto);
           el.click();
-          return { success: true, texto };
+          return { success: true, texto: 'Enviar proposta' };
         }
       }
-      
-      const links = document.querySelectorAll('a[href*="/bid/"]');
-      if (links.length > 0) {
+
+      const bidLinks = Array.from(document.querySelectorAll('a[href*="/bid/"]')).filter(isVisible);
+      if (bidLinks.length > 0) {
         console.log('99F: Clicando em link /bid/');
-        links[0].click();
+        bidLinks[0].click();
         return { success: true, texto: 'link /bid/' };
       }
-      
+
       return { success: false };
     });
   }
@@ -133,54 +136,44 @@ class FormService {
   
   async submitForm(tabId) {
     return await browser.executeScript(tabId, () => {
-      console.log('99F: Procurando botão "Enviar proposta"...');
-      
-      const elementos = document.querySelectorAll('button, input[type="submit"], a');
-      
-      // Primeira tentativa: texto exato
+      const isVisible = (el) => el && el.offsetParent !== null;
+      const getText = (el) => (el.innerText || el.value || el.textContent || el.getAttribute('aria-label') || '').trim().toLowerCase();
+
+      const elementos = document.querySelectorAll('button, input[type="submit"], a, [role="button"]');
+
       for (const el of elementos) {
-        if (el.offsetParent === null) continue;
-        
-        const texto = (el.innerText || el.value || '').trim().toLowerCase();
-        const classes = (el.className || '').toLowerCase();
-        
-        console.log('99F: Elemento -', texto.substring(0, 25), classes.substring(0, 20));
-        
-        if (texto === 'enviar proposta') {
-          console.log('99F: ENCONTRADO! Clicando...');
+        if (!isVisible(el)) continue;
+        const texto = getText(el);
+        if (texto === 'enviar proposta' || (texto.includes('enviar') && texto.includes('proposta') && !texto.includes('melhorar'))) {
+          console.log('99F: Botão Enviar encontrado');
           el.click();
           return { success: true, texto: 'Enviar proposta' };
         }
       }
-      
-      // Segunda tentativa: botão verde
+
+      const classes = (el) => (el.className || '').toLowerCase();
       for (const el of elementos) {
-        if (el.offsetParent === null) continue;
-        
-        const texto = (el.innerText || el.value || '').toLowerCase();
-        const classes = (el.className || '').toLowerCase();
-        
-        if (
-          (classes.includes('btn-success') || classes.includes('btn-primary') || classes.includes('green')) &&
-          (texto.includes('enviar') || texto.includes('submit'))
-        ) {
-          console.log('99F: Botão verde encontrado');
+        if (!isVisible(el)) continue;
+        const texto = getText(el);
+        const cls = classes(el);
+        if ((cls.includes('btn-success') || cls.includes('btn-primary') || cls.includes('green') || cls.includes('primary')) &&
+            (texto.includes('enviar') || texto.includes('submit') || texto.includes('proposta'))) {
+          console.log('99F: Botão submit por classe');
           el.click();
-          return { success: true, texto: 'botão verde' };
+          return { success: true, texto: 'botão submit' };
         }
       }
-      
-      // Terceira tentativa: submit do form
+
       const form = document.querySelector('form');
       if (form) {
-        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"], button');
-        if (submitBtn && submitBtn.offsetParent !== null) {
+        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"], button:not([type="button"])');
+        if (submitBtn && isVisible(submitBtn)) {
           console.log('99F: Submit do form');
           submitBtn.click();
           return { success: true, texto: 'form submit' };
         }
       }
-      
+
       return { success: false };
     });
   }
