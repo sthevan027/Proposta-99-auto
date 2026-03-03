@@ -20,19 +20,46 @@ class ScraperService {
 
       console.log('99F: Links /project/ encontrados:', allProjectLinks.length);
 
+      // Ícone teal/etiqueta = proposta já enviada (não entrar nesses projetos)
+      const hasProposalSentIcon = (card) => {
+        if (!card) return false;
+        const tealHex = ['14b8a6', '0d9488', '2dd4bf', '06b6d4', '0891b2', '0e7490'];
+        const isTeal = (color) => {
+          if (!color || color === 'transparent' || color === 'rgba(0,0,0,0)') return false;
+          const c = color.toLowerCase().replace(/\s/g, '');
+          if (tealHex.some(h => c.includes(h))) return true;
+          const m = c.match(/rgb?\((\d+),\s*(\d+),\s*(\d+)/);
+          if (m) {
+            const [r, g, b] = m.slice(1).map(Number);
+            return g > 130 && r < 100 && b > 110;
+          }
+          return false;
+        };
+        const icons = card.querySelectorAll('svg, img, [class*="icon"], [class*="tag"], [class*="Icon"]');
+        for (const el of icons) {
+          if (el.offsetParent === null) continue;
+          const fill = el.getAttribute('fill') || el.getAttribute('stroke');
+          const style = window.getComputedStyle(el);
+          if (isTeal(fill) || isTeal(style.fill) || isTeal(style.color) || isTeal(style.backgroundColor)) return true;
+          const cls = (el.className || '').toLowerCase();
+          if ((cls.includes('tag') || cls.includes('etiqueta') || cls.includes('sent')) && isTeal(style.color)) return true;
+          if (el.tagName === 'IMG' && /proposta|enviada|tag|etiqueta/.test((el.alt || el.src || ''))) return true;
+        }
+        return false;
+      };
+
       const addProject = (link, container) => {
         const href = (link.href || '').split('?')[0];
         if (!href || href.includes('/bid/')) return;
         if (seen.has(href)) return;
 
-        // Container = link parent ou elemento pai (para texto do card)
         const card = container || link.closest('div, li, article, tr, [class*="item"], [class*="card"], [class*="result"]') || link;
         const texto = (card?.innerText || link.innerText || '').toLowerCase();
 
-        // Fechado - termos definitivos
-        if (filters.CLOSED_KEYWORDS.some(kw => texto.includes(kw))) return;
+        // Ícone teal = já enviou proposta (pular antes de abrir)
+        if (hasProposalSentIcon(card)) return;
 
-        // Já enviou
+        if (filters.CLOSED_KEYWORDS.some(kw => texto.includes(kw))) return;
         if (filters.SENT_KEYWORDS.some(kw => texto.includes(kw))) return;
         if (texto.includes('melhorar proposta')) return;
 
