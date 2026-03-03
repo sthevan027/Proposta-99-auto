@@ -42,13 +42,15 @@ Fim do relatório
   async save() {
     const { conteudo, data } = this.generate();
     
-    const blob = new Blob([conteudo], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+    // Usa data URL em vez de blob URL - no Manifest V3 o service worker pode
+    // ser descarregado antes do download, invalidando blob URLs
+    const base64 = btoa(unescape(encodeURIComponent(conteudo)));
+    const dataUrl = `data:text/plain;charset=utf-8;base64,${base64}`;
     
     const filename = `propostas_99freelas_${data}.txt`;
     
     await chrome.downloads.download({
-      url: url,
+      url: dataUrl,
       filename: filename,
       saveAs: true
     });
