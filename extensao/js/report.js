@@ -47,12 +47,18 @@ Fim do relatório
     const base64 = btoa(unescape(encodeURIComponent(conteudo)));
     const dataUrl = `data:text/plain;charset=utf-8;base64,${base64}`;
     
+    // Data URLs têm limite ~2MB; conteúdo muito grande pode falhar
+    if (dataUrl.length > 1.8 * 1024 * 1024) {
+      throw new Error('Relatório muito grande. Tente limpar o histórico e gerar novamente.');
+    }
+    
     const filename = `propostas_99freelas_${data}.txt`;
     
+    // saveAs: false evita que o diálogo feche o popup antes da resposta
     await chrome.downloads.download({
       url: dataUrl,
       filename: filename,
-      saveAs: true
+      saveAs: false
     });
     
     logger.success(`Relatório salvo: ${filename}`);
