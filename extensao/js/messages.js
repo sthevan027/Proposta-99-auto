@@ -54,8 +54,8 @@ async function handleMessage(message, sendResponse) {
         
       case 'salvarRelatorio':
         try {
-          const filename = await report.save();
-          sendResponse({ success: true, filename });
+          const { conteudo, filename } = report.getReport();
+          sendResponse({ success: true, conteudo, filename });
         } catch (erro) {
           sendResponse({ success: false, erro: erro.message });
         }

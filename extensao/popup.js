@@ -141,7 +141,18 @@ btnRelatorio.addEventListener('click', async () => {
   try {
     const response = await chrome.runtime.sendMessage({ action: 'salvarRelatorio' });
     if (response.success) {
-      btnRelatorio.textContent = '✓ Salvo!';
+      const blob = new Blob([response.conteudo], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      try {
+        await chrome.downloads.download({
+          url,
+          filename: response.filename,
+          saveAs: true
+        });
+        btnRelatorio.textContent = '✓ Salvo!';
+      } finally {
+        setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      }
     } else {
       btnRelatorio.textContent = '❌ Erro';
     }
