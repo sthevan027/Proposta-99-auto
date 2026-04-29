@@ -48,12 +48,12 @@ Fim do relatório
   async save() {
     const { conteudo, filename } = this.getReport();
 
-    // Fallback: mantém o download aqui, mas o fluxo preferencial é
-    // o popup disparar o download (garante "user gesture").
-    const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
+    // MV3: evite blob/object URLs (podem invalidar com unload do popup/SW).
+    // Data URL base64 é auto-contida e não depende do ciclo de vida do contexto.
+    const base64 = toBase64Utf8(conteudo);
+    const dataUrl = `data:text/plain;charset=utf-8;base64,${base64}`;
 
-    await chrome.downloads.download({ url, filename, saveAs: true });
+    await chrome.downloads.download({ url: dataUrl, filename, saveAs: true });
     
     logger.success(`Relatório salvo: ${filename}`);
     return filename;
@@ -61,3 +61,10 @@ Fim do relatório
 }
 
 export const report = new ReportService();
+
+function toBase64Utf8(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
