@@ -38,13 +38,19 @@ Fim do relatório
 
     return { conteudo, data };
   }
+
+  getReport() {
+    const { conteudo, data } = this.generate();
+    const filename = `propostas_99freelas_${data}.txt`;
+    return { conteudo, filename };
+  }
   
   async save() {
-    const { conteudo, data } = this.generate();
-    
-    // Usa data URL em vez de blob URL - no Manifest V3 o service worker pode
-    // ser descarregado antes do download, invalidando blob URLs
-    const base64 = btoa(unescape(encodeURIComponent(conteudo)));
+    const { conteudo, filename } = this.getReport();
+
+    // MV3: evite blob/object URLs (podem invalidar com unload do popup/SW).
+    // Data URL base64 é auto-contida e não depende do ciclo de vida do contexto.
+    const base64 = toBase64Utf8(conteudo);
     const dataUrl = `data:text/plain;charset=utf-8;base64,${base64}`;
     
     // Data URLs têm limite ~2MB; conteúdo muito grande pode falhar
@@ -67,3 +73,10 @@ Fim do relatório
 }
 
 export const report = new ReportService();
+
+function toBase64Utf8(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
