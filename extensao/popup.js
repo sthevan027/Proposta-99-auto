@@ -140,17 +140,23 @@ btnRelatorio.addEventListener('click', async () => {
   
   try {
     const response = await chrome.runtime.sendMessage({ action: 'salvarRelatorio' });
-    if (response.success) {
+    if (response && response.success) {
       btnRelatorio.textContent = '✓ Salvo!';
     } else {
+      const erroMsg = (response && response.erro) ? response.erro : 'Erro desconhecido';
+      console.error('Erro ao salvar relatório:', erroMsg);
       btnRelatorio.textContent = '❌ Erro';
+      btnRelatorio.title = erroMsg;
     }
   } catch (e) {
+    console.error('Erro ao salvar relatório:', e);
     btnRelatorio.textContent = '❌ Erro';
+    btnRelatorio.title = e?.message || 'Falha na comunicação com o background';
   }
   
   setTimeout(() => {
     btnRelatorio.textContent = '💾 Salvar Relatório';
+    btnRelatorio.title = '';
     btnRelatorio.disabled = false;
   }, 2000);
 });

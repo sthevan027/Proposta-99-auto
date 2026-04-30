@@ -52,8 +52,20 @@ Fim do relatório
     // Data URL base64 é auto-contida e não depende do ciclo de vida do contexto.
     const base64 = toBase64Utf8(conteudo);
     const dataUrl = `data:text/plain;charset=utf-8;base64,${base64}`;
-
-    await chrome.downloads.download({ url: dataUrl, filename, saveAs: true });
+    
+    // Data URLs têm limite ~2MB; conteúdo muito grande pode falhar
+    if (dataUrl.length > 1.8 * 1024 * 1024) {
+      throw new Error('Relatório muito grande. Tente limpar o histórico e gerar novamente.');
+    }
+    
+    const filename = `propostas_99freelas_${data}.txt`;
+    
+    // saveAs: false evita que o diálogo feche o popup antes da resposta
+    await chrome.downloads.download({
+      url: dataUrl,
+      filename: filename,
+      saveAs: false
+    });
     
     logger.success(`Relatório salvo: ${filename}`);
     return filename;
